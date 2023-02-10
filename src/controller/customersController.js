@@ -50,7 +50,7 @@ export async function setCustomer(req, res){
         if (findCpf.rowCount === 1 ) return res.sendStatus(409)
         
         db.query(`UPDATE customers SET name = '${name}', phone = '${phone}', cpf = '${cpf}', birthday = '${birthday}' WHERE id = ${id};`)
-        res.sendStatus(201)
+        res.sendStatus(200)
 
 
     } catch (error) {
