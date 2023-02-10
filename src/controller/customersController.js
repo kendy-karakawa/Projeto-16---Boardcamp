@@ -17,7 +17,7 @@ export async function listCustomersById(req, res){
         const findCustomer = await db.query(`SELECT * FROM customers WHERE id = $1;`, [id])
         if (findCustomer.rowCount === 0) return res.sendStatus(404)
 
-        res.send(findCustomer.rows)
+        res.send(findCustomer.rows[0])
         
     } catch (error) {
         res.status(500).send(error)
@@ -46,7 +46,7 @@ export async function setCustomer(req, res){
         const findId = await db.query(`SELECT * FROM customers WHERE id = $1;`, [id])
         if (findId.rowCount === 0 ) return res.sendStatus(404)
 
-        const findCpf = await db.query(`SELECT cpf FROM customers WHERE cpf = $1;`, [cpf])
+        const findCpf = await db.query(`SELECT cpf FROM customers WHERE cpf = $1 AND id <> ${id};`, [cpf])
         if (findCpf.rowCount === 1 ) return res.sendStatus(409)
         
         db.query(`UPDATE customers SET name = '${name}', phone = '${phone}', cpf = '${cpf}', birthday = '${birthday}' WHERE id = ${id};`)
