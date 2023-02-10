@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { listRentals } from "../controller/rentalsController.js";
 
 
 const rentsRouter = Router();
 
-rentsRouter.get("/rentals")
+rentsRouter.get("/rentals", listRentals)
 rentsRouter.post("/rentals")
 rentsRouter.put("/rentals")
 rentsRouter.delete("/rentals")
