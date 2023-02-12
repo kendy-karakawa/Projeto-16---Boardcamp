@@ -75,8 +75,8 @@ export async function postRental(req, res){
         const originalPrice = findGame.rows[0].pricePerDay * daysRented
         
         db.query(`
-        INSERT INTO rentals ("customerId", "gameId","rentDate", "daysRented","originalPrice") 
-        VALUES (${customerId}, ${gameId}, '${rentDate}', ${daysRented}, ${originalPrice})`)        
+        INSERT INTO rentals ("customerId", "gameId","rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
+        VALUES (${customerId}, ${gameId}, '${rentDate}', ${daysRented}, NULL, ${originalPrice}, NULL)`)        
 
         res.sendStatus(201)
     } catch (error) {
@@ -92,7 +92,7 @@ export async function finishRental(req, res){
     try {
         const findRental = await db.query(`SELECT id, "returnDate", "rentDate", "daysRented", "originalPrice" FROM rentals WHERE id = $1;`, [id])
         
-        if (findRental.rowCount === 0) return res.sendStatus(400) 
+        if (findRental.rowCount === 0) return res.sendStatus(404) 
 
         const {returnDate, rentDate, daysRented, originalPrice} = findRental.rows[0]   
 
@@ -111,6 +111,25 @@ export async function finishRental(req, res){
         await db.query(`UPDATE rentals SET "returnDate" = '${dateNow}', "delayFee" = ${delayFee} WHERE id = ${id}`)
 
         res.sendStatus(200)
+    } catch (error) {
+        res.status(500).send(error)
+    }
+}
+
+export async function deleteRental(req, res){
+    const {id}= req.params
+    
+    
+    try {
+        const findRental = await db.query(`SELECT * FROM rentals WHERE id = $1;`, [id])
+
+
+        if(findRental.rowCount === 0) return res.status(404).send("alguel nao encontrado")
+        if(findRental.rows[0].returnDate === null) return res.status(400).send("alguel nao foi finalizado ainda")
+
+        await db.query(`DELETE FROM rentals WHERE id = ${id}`)
+        res.sendStatus(200)
+
     } catch (error) {
         res.status(500).send(error)
     }
