@@ -7,7 +7,7 @@ const rentsRouter = Router();
 
 rentsRouter.get("/rentals", listRentals)
 rentsRouter.post("/rentals",validateSchema(rentalsSchema), postRental)
-rentsRouter.put("/rentals/:id/return", finishRental)
+rentsRouter.post("/rentals/:id/return", finishRental)
 rentsRouter.delete("/rentals")
 
 export default rentsRouter

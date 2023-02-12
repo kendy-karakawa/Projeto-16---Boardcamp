@@ -61,18 +61,18 @@ export async function postRental(req, res){
 
     try {
         const findCustomer =  await db.query(`SELECT * FROM customers WHERE id = $1;`,[customerId])
-        if (findCustomer.rowCount === 0) return res.sendStatus(400)
+        if (findCustomer.rowCount === 0) return res.status(400).send("cliente nao encontrado")
 
         const findGame = await db.query(`SELECT "pricePerDay", "stockTotal" FROM games WHERE id = $1;`,[gameId])
-        if (findGame.rowCount === 0) return res.sendStatus(400)
+        if (findGame.rowCount === 0) return res.status(400).send("game nao encontrado")
 
         const gameStock = findGame.rows[0].stockTotal
         const totalGameRent = await db.query(`SELECT count ("gameId") FROM rentals WHERE "gameId" = $1;`, [gameId])
-        if (totalGameRent.rows[0].count >= gameStock) return res.sendStatus(400)
+        if (totalGameRent.rows[0].count >= gameStock) return res.status(400).send("sem estoque")
         
 
 
-        const originalPrice =findGame.rows[0].pricePerDay * daysRented
+        const originalPrice = findGame.rows[0].pricePerDay * daysRented
         
         db.query(`
         INSERT INTO rentals ("customerId", "gameId","rentDate", "daysRented","originalPrice") 
@@ -86,7 +86,7 @@ export async function postRental(req, res){
 
 export async function finishRental(req, res){
     const {id} = req.params
-    const dateNow = dayjs("2023-2-20").format("YYYY-MM-DD") //dayjs().format("YYYY-MM-DD");
+    const dateNow = dayjs().format("YYYY-MM-DD");
     
     
     try {
