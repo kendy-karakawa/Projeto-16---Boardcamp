@@ -2,6 +2,7 @@ import { db } from "../config/database.connection.js";
 import dayjs from "dayjs";
 
 
+
 export async function listRentals(req, res){
     try {
   
@@ -85,11 +86,32 @@ export async function postRental(req, res){
 
 export async function finishRental(req, res){
     const {id} = req.params
-    const returnDate = dayjs().format("YYYY-MM-DD");
+    const dateNow = dayjs("2023-2-20").format("YYYY-MM-DD") //dayjs().format("YYYY-MM-DD");
+    
+    
+    try {
+        const findRental = await db.query(`SELECT id, "returnDate", "rentDate", "daysRented", "originalPrice" FROM rentals WHERE id = $1;`, [id])
+        
+        if (findRental.rowCount === 0) return res.sendStatus(400) 
 
-    const findRental = await db.query(`SELECT id, "returnDate", "rentDate", "daysRented" FROM rentals WHERW id = $1;`, [id])
-    if (findRental.rowCount === 0) return res.sendStatus(400)
-    if (findRental.rows[0].returnDate !== null) return res.sendStatus(400)
+        const {returnDate, rentDate, daysRented, originalPrice} = findRental.rows[0]   
 
-    //const delayFee = 
+        if (returnDate !== null) return res.sendStatus(400)      
+       
+        const price =  originalPrice / daysRented
+
+        const rentalDates = dayjs(rentDate).add(daysRented, 'day').format("YYYY-MM-DD")
+
+        const daysOfDelay = dayjs(dateNow).diff(rentalDates, 'day')
+
+        let delayFee = 0
+        
+        if (daysOfDelay >= 1) delayFee = daysOfDelay * price
+        
+        await db.query(`UPDATE rentals SET "returnDate" = '${dateNow}', "delayFee" = ${delayFee} WHERE id = ${id}`)
+
+        res.sendStatus(200)
+    } catch (error) {
+        res.status(500).send(error)
+    }
 }
