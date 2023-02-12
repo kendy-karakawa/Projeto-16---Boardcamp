@@ -70,9 +70,9 @@ export async function postRental(req, res){
         const totalGameRent = await db.query(`SELECT count ("gameId") FROM rentals WHERE "gameId" = $1;`, [gameId])
         if (totalGameRent.rows[0].count >= gameStock) return res.status(400).send("sem estoque")
         
+        const {pricePerDay} = findGame.rows[0]
 
-
-        const originalPrice = findGame.rows[0].pricePerDay * daysRented
+        const originalPrice = pricePerDay * daysRented
         
         db.query(`
         INSERT INTO rentals ("customerId", "gameId","rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
